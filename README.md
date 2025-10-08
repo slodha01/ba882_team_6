@@ -2,8 +2,7 @@
 
 ## Overview
 This project is part of the **BA 882: Deploying Analytics Pipelines** class at Boston University.  
-It builds an automated data pipeline that extracts data from the **YouTube Data API**,  
-transforms it, and loads it into a cloud data warehouse for analytics, ML, and GenAI use cases.
+It builds an automated data pipeline that extracts data from the **YouTube Data API**, transforms it, and loads it into a cloud data warehouse for analytics, ML, and GenAI use cases.
 
 ## Project Phases
 1. **Data Engineering & Reporting** – Build a scheduled ETL pipeline to ingest YouTube data.
@@ -12,9 +11,9 @@ transforms it, and loads it into a cloud data warehouse for analytics, ML, and G
 
 ## Architecture
 - **Data Source:** YouTube Data API v3  
-- **Storage:** Cloud Data Warehouse (e.g. BigQuery)  
+- **Storage:** Cloud Data Warehouse (BigQuery)  
 - **Orchestration:** Airflow / Prefect  
-- **Visualization:** ? (Streamlit / Metabase / Superset) 
+- **Visualization:** 
 
 ## Data Model
 
