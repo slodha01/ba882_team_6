@@ -47,12 +47,16 @@ def get_channel_details(channel_ids):
     return pd.DataFrame(channels_data)
 
 
-def get_video(query, max_results=20):
+def get_video(query, max_results=20, order="relevance"):
     """
     Retrieves YouTube videos for a given search query.
-    Returns only basic info: video_id, channel_id, title, description, and published_at.
+    Allows controlling the ordering (e.g., relevance, date, viewCount).
     """
-    search_url = f"{BASE_URL}/search?part=snippet&q={query}&type=video&maxResults={max_results}&key={API_KEY}"
+    search_url = (
+        f"{BASE_URL}/search?part=snippet&q={query}"
+        f"&type=video&maxResults={max_results}&order={order}&key={API_KEY}"
+    )
+    
     response = requests.get(search_url)
     response.raise_for_status()
     items = response.json().get("items", [])
