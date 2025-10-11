@@ -13,7 +13,7 @@ def upload_to_gcs(df: pd.DataFrame, bucket_name: str, folder_name: str, prefix: 
         return
 
     client = storage.Client()
-    bucket = client.bucket(bucket_name)
+    bucket = client.bucket(bucket_name) 
 
     # Create a timestamped filename
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -24,5 +24,5 @@ def upload_to_gcs(df: pd.DataFrame, bucket_name: str, folder_name: str, prefix: 
     csv_data = df.to_csv(index=False)
     blob.upload_from_string(csv_data, content_type="text/csv")
 
-    print(f"✅ Uploaded {len(df)} rows to gs://{bucket_name}/{blob_name}")
+    print(f"Uploaded {len(df)} rows to gs://{bucket_name}/{blob_name}")
 

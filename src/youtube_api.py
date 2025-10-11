@@ -1,8 +1,15 @@
 import os
 import requests
 import pandas as pd
+from dotenv import load_dotenv
+
+load_dotenv()
 
 API_KEY = os.getenv("YOUTUBE_API_KEY")
+
+if not API_KEY:
+    raise ValueError("YouTube API key not found in .env file!")
+
 BASE_URL = "https://www.googleapis.com/youtube/v3"
 
 def get_channel_details(channel_ids):
