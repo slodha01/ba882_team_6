@@ -82,7 +82,8 @@ def get_video(query, max_results=20, order="relevance"):
             "title": snippet.get("title"),
             "description": snippet.get("description"),
             "published_at": snippet.get("publishedAt"),
-            "search_query": query
+            "search_query": query,
+            "search_order": order
         })
 
     return pd.DataFrame(videos)
