@@ -61,12 +61,12 @@ echo "======================================================"
 echo "Deploying the YouTube data loader"
 echo "======================================================"
 
-gcloud functions deploy raw-load \
+gcloud functions deploy raw-parse \
     --gen2 \
     --runtime ${RUNTIME} \
     --trigger-http \
     --entry-point task \
-    --source ./raw-load \
+    --source ./raw-parse \
     --stage-bucket ${STAGE_BUCKET} \
     --service-account ${SERVICE_ACCOUNT} \
     --region ${REGION} \

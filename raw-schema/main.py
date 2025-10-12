@@ -61,17 +61,16 @@ def task(request):
     """)
 
     # Video statistics table
-    md.sql("""
+    md.sql(f"""
         CREATE TABLE IF NOT EXISTS {db_schema}.video_statistics (
             video_id STRING PRIMARY KEY,
             category_id STRING,
             tags STRING,
-            durantion STRING,
+            duration STRING,
             view_count INTEGER,
             like_count INTEGER,
             comment_count INTEGER,
             favorite_count INTEGER,
-            comment_count INTEGER,
             ingest_timestamp TIMESTAMP,
             source_path VARCHAR,
             run_id VARCHAR
@@ -79,7 +78,7 @@ def task(request):
     """)
 
     # Comments table
-    md.sql("""
+    md.sql(f"""
         CREATE TABLE IF NOT EXISTS {db_schema}.comments (
             comment_id STRING PRIMARY KEY,
             video_id STRING,
@@ -94,7 +93,7 @@ def task(request):
     """)
 
     # Categories table
-    md.sql("""
+    md.sql(f"""
         CREATE TABLE IF NOT EXISTS {db_schema}.categories (
             category_id STRING PRIMARY KEY,
             title STRING,
@@ -105,5 +104,5 @@ def task(request):
         );
     """)
 
-    print("✅ Schema and tables created in MotherDuck.")
+    print("Schema and tables created in MotherDuck.")
     return {}, 200

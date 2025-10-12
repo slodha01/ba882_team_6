@@ -13,14 +13,14 @@ def upload_to_gcs(bucket_name, path, run_id, data):
     blob_name = f"{path}/{run_id}/data.json"
     blob = bucket.blob(blob_name)
     blob.upload_from_string(data)
-    print(f"✅ Uploaded {blob_name} to {bucket_name}")
+    print(f"Uploaded {blob_name} to {bucket_name}")
     return {'bucket_name': bucket_name, 'blob_name': blob_name}
 
 @functions_framework.http
 def task(request):
     query = request.args.get("query", "Data Engineering")
     run_id = uuid.uuid4().hex[:12]
-    print(f"🔍 Query: {query}, Run ID: {run_id}")
+    print(f"Query: {query}, Run ID: {run_id}")
 
     # Extract from YouTube
     videos_df = get_video(query, max_results=50)
