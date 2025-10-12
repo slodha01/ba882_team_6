@@ -10,7 +10,7 @@ gcloud config set project adrineto-qst882-fall25
 REGION="us-central1"
 RUNTIME="python312"
 SERVICE_ACCOUNT="ba882-fall25@adrineto-qst882-fall25.iam.gserviceaccount.com"
-STAGE_BUCKET="adrineto-qst882-fall25-functions"
+STAGE_BUCKET="adrineto-ba882-fall25-functions"
 
 # ======================================================
 # Deploy schema setup function
