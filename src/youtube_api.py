@@ -42,7 +42,7 @@ def get_channel_details(channel_ids):
 
             channels_data.append({
                 "channel_id": item.get("id"),
-                "channel_title": snippet.get("title"),
+                "title": snippet.get("title"),
                 "description": snippet.get("description"),
                 "published_at": snippet.get("publishedAt"),
                 "country": snippet.get("country"),
