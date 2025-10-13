@@ -49,9 +49,14 @@ def task(request):
         if df.empty:
             print(f"Skipping {table_name} (empty DataFrame)")
             return
+        
+        for col in ["published_at", "updated_at", "created_at"]:
+            if col in df.columns:
+                df[col] = pd.to_datetime(df[col], errors="coerce")
 
         table_id = f"{project_id}.{dataset_id}.{table_name}"
-        job = bq_client.load_table_from_dataframe(df, table_id)
+        job_config = bigquery.LoadJobConfig(write_disposition="WRITE_APPEND")
+        job = bq_client.load_table_from_dataframe(df, table_id, job_config=job_config)
         job.result()
         print(f"Loaded {len(df)} rows into {table_id}")
 
