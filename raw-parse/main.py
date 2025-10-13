@@ -50,7 +50,7 @@ def task(request):
             print(f"Skipping {table_name} (empty DataFrame)")
             return
         
-        for col in ["published_at", "updated_at", "created_at"]:
+        for col in ["published_at", "updated_at", "created_at", "collected_at"]:
             if col in df.columns:
                 df[col] = pd.to_datetime(df[col], errors="coerce")
 
