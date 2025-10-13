@@ -7,6 +7,7 @@ import os
 import pandas as pd
 from googleapiclient.discovery import build
 from datetime import datetime
+from googleapiclient.errors import HttpError
 
 # Global variable to cache the YouTube client
 _youtube_client = None
@@ -188,16 +189,18 @@ def get_video_comments(video_id, max_comments=50):
         
         return pd.DataFrame(comments) if comments else None
     
-    except Exception as e:
-        error_str = str(e)
-        # Check if comments are disabled (403 error)
-        if "commentsDisabled" in error_str or "403" in error_str:
+    except HttpError as e:
+        error_json = e.content.decode("utf-8")
+        if "commentsDisabled" in error_json:
             print(f"Comments disabled for video {video_id}")
             return None
         else:
-            # Other errors - log but don't crash
-            print(f"Error fetching comments for video {video_id}: {e}")
+            print(f"HttpError fetching comments for {video_id}: {error_json}")
             return None
+
+    except Exception as e:
+        print(f"Unexpected error fetching comments for {video_id}: {e}")
+        return None
 
 
 def get_video_categories(region_code="US"):

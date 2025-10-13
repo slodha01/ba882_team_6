@@ -1,6 +1,7 @@
 # extract_youtube.py
 import functions_framework
 from google.cloud import storage
+import pandas as pd
 import datetime, uuid, json
 from youtube_api import get_video, get_channel_details, get_video_statistics, get_video_comments, get_video_categories
 
@@ -29,25 +30,27 @@ def task(request):
     stats_df = get_video_statistics(videos_df["video_id"].tolist())
 
     # Extract comments (try multiple videos until we find one with comments enabled)
-    comments_df = None
+    all_comments = []
+
     if not videos_df.empty:
-        # Try up to 5 videos to find one with comments enabled
-        for i in range(min(5, len(videos_df))):
+        for i in range(len(videos_df)):
             video_id = videos_df["video_id"].iloc[i]
             temp_comments = get_video_comments(video_id, max_comments=50)
+            
             if temp_comments is not None and not temp_comments.empty:
-                comments_df = temp_comments
-                break
+                all_comments.append(temp_comments)
+            else:
+                print(f"No comments found or comments disabled for video {video_id}")
         
-        if comments_df is None or comments_df.empty:
-            comments_df = None
+        # Combine all comments into a single DataFrame (if any found)
+        comments_df = pd.concat(all_comments, ignore_index=True) if all_comments else None
     else:
         comments_df = None
 
-    if not videos_df.empty:
-        comments_df = get_video_comments(videos_df["video_id"].iloc[0])
+    if comments_df is not None:
+        print(f"Successfully fetched {len(comments_df)} comments across {len(all_comments)} videos.")
     else:
-        comments_df = None
+        print("No comments available for any of the selected videos.")
 
     categories_df = get_video_categories(region_code="US")
 
