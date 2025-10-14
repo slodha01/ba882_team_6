@@ -100,7 +100,7 @@ def get_channel_details(channel_ids):
                 all_channels.append({
                     'channel_id': item['id'],
                     'channel_title': snippet['title'],
-                    'description': snippet.get('description'),
+                    'channel_description': snippet.get('description'),
                     'country': snippet.get('country'),
                     'published_at': snippet['publishedAt'],
                     'subscriber_count': int(stats.get('subscriberCount', 0)),
