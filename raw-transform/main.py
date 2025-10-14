@@ -1,20 +1,67 @@
 """
-Create BigQuery staging tables for YouTube data
+Transform raw data into staging tables for YouTube data.
 """
 import functions_framework
 from google.cloud import bigquery
 from flask import jsonify
 
 project_id = 'adrineto-qst882-fall25'
-dataset_id = 'youtube_raw'
+dataset_id = 'youtube_staging'
+location = 'us-central1'
 
 @functions_framework.http
 def task(request):
-    """
-    Transform raw data into staging tables using incremental MERGE logic.
-    """
-    client = bigquery.Client(project=project_id)
+    client = bigquery.Client(project=project_id, location=location)
 
+    # Define staging table schemas
+    table_schemas = {
+        "dim_videos": [
+            bigquery.SchemaField("video_id", "STRING", mode="REQUIRED"),
+            bigquery.SchemaField("title", "STRING"),
+            bigquery.SchemaField("description", "STRING"),
+            bigquery.SchemaField("channel_id", "STRING"),
+            bigquery.SchemaField("published_at", "TIMESTAMP"),
+            bigquery.SchemaField("last_updated", "TIMESTAMP")
+        ],
+        "dim_channels": [
+            bigquery.SchemaField("channel_id", "STRING", mode="REQUIRED"),
+            bigquery.SchemaField("channel_title", "STRING"),
+            bigquery.SchemaField("channel_description", "STRING"),
+            bigquery.SchemaField("last_updated", "TIMESTAMP")
+        ],
+        "dim_authors": [
+            bigquery.SchemaField("author_id", "STRING", mode="REQUIRED"),
+            bigquery.SchemaField("author_display_name", "STRING"),
+            bigquery.SchemaField("last_updated", "TIMESTAMP")
+        ],
+        "fact_video_statistics": [
+            bigquery.SchemaField("video_id", "STRING"),
+            bigquery.SchemaField("date", "DATE"),
+            bigquery.SchemaField("view_count", "INTEGER"),
+            bigquery.SchemaField("like_count", "INTEGER"),
+            bigquery.SchemaField("comment_count", "INTEGER")
+        ],
+        "fact_comments": [
+            bigquery.SchemaField("comment_id", "STRING", mode="REQUIRED"),
+            bigquery.SchemaField("video_id", "STRING"),
+            bigquery.SchemaField("author_id", "STRING"),
+            bigquery.SchemaField("comment_text", "STRING"),
+            bigquery.SchemaField("published_at", "TIMESTAMP")
+        ],
+    }
+
+    # --- Step 1: Ensure all tables exist ---
+    for table_name, schema in table_schemas.items():
+        table_id = f"{project_id}.{dataset_id}.{table_name}"
+        try:
+            client.get_table(table_id)
+            print(f"Table already exists: {table_id}")
+        except Exception:
+            table = bigquery.Table(table_id, schema=schema)
+            client.create_table(table)
+            print(f"Created table: {table_id}")
+
+    # --- Step 2: Run transformations ---
     queries = [
         # dim_videos
         """
@@ -66,17 +113,17 @@ def task(request):
         USING (
           SELECT DISTINCT
             author_id,
-            author_name
+            author_display_name
           FROM `adrineto-qst882-fall25.youtube_raw.comment_authors`
         ) AS S
         ON T.author_id = S.author_id
         WHEN MATCHED THEN
           UPDATE SET
-            T.author_name = S.author_name,
+            T.author_display_name = S.author_display_name,
             T.last_updated = CURRENT_TIMESTAMP()
         WHEN NOT MATCHED THEN
-          INSERT (author_id, author_name, last_updated)
-          VALUES (S.author_id, S.author_name, CURRENT_TIMESTAMP());
+          INSERT (author_id, author_display_name, last_updated)
+          VALUES (S.author_id, S.author_display_name, CURRENT_TIMESTAMP());
         """,
         # fact_video_statistics
         """

@@ -55,7 +55,7 @@ def task(request):
             'channels': [
                 bigquery.SchemaField("channel_id", "STRING", mode="REQUIRED"),
                 bigquery.SchemaField("channel_title", "STRING"),
-                bigquery.SchemaField("description", "STRING"),
+                bigquery.SchemaField("channel_description", "STRING"),
                 bigquery.SchemaField("country", "STRING"),
                 bigquery.SchemaField("published_at", "TIMESTAMP"),
                 bigquery.SchemaField("subscriber_count", "INTEGER"),
