@@ -32,7 +32,7 @@ def task(request):
         dataset_ref = f"{project_id}.{dataset_id}"
         try:
             dataset = bigquery.Dataset(dataset_ref)
-            dataset.location = "US"
+            dataset.location = "us-central1"
             dataset = client.create_dataset(dataset, exists_ok=True)
             print(f"Dataset {dataset_id} ready")
         except Exception as e:
