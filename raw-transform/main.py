@@ -114,7 +114,7 @@ def task(request):
           SELECT DISTINCT
             author_id,
             author_display_name
-          FROM `adrineto-qst882-fall25.youtube_raw.comment`
+          FROM `adrineto-qst882-fall25.youtube_raw.comments`
         ) AS S
         ON T.author_id = S.author_id
         WHEN MATCHED THEN
