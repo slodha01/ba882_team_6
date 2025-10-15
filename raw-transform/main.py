@@ -140,13 +140,23 @@ def task(request):
       SELECT
         v.video_id,
         v.channel_id,
-        TRIM(
-          CONCAT(
-            LPAD(CAST(IFNULL(REGEXP_EXTRACT(s.duration, r'PT(\\d+)M'), '0') AS INT64), 2, '0'),
-            ':',
-            LPAD(CAST(IFNULL(REGEXP_EXTRACT(s.duration, r'PT(?:\\d+M)?(\\d+)S'), '0') AS INT64), 2, '0')
-          )
-        ) AS duration,
+        CASE
+          WHEN REGEXP_CONTAINS(duration, r'PT\d+H\d+M\d+S') THEN
+            CONCAT(
+              CAST(REGEXP_EXTRACT(duration, r'PT(\d+)H') AS STRING), ':',
+              LPAD(CAST(REGEXP_EXTRACT(duration, r'(\d+)M') AS STRING), 2, '0'), ':',
+              LPAD(CAST(REGEXP_EXTRACT(duration, r'(\d+)S') AS STRING), 2, '0')
+            )
+          WHEN REGEXP_CONTAINS(duration, r'PT\d+M\d+S') THEN
+            CONCAT(
+              CAST(REGEXP_EXTRACT(duration, r'PT(\d+)M') AS STRING), ':',
+              LPAD(CAST(REGEXP_EXTRACT(duration, r'(\d+)S') AS STRING), 2, '0')
+            )
+          WHEN REGEXP_CONTAINS(duration, r'PT\d+S') THEN
+            CONCAT('0:', LPAD(CAST(REGEXP_EXTRACT(duration, r'PT(\d+)S') AS STRING), 2, '0'))
+          ELSE
+            NULL
+        END AS duration
         CURRENT_DATE() AS date,
         s.view_count,
         s.like_count,
