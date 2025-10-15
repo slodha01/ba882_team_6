@@ -1,5 +1,5 @@
 """
-Transform raw data into staging tables for YouTube data.
+Transform raw data into staging tables for YouTube data with incremental merge logic.
 """
 import functions_framework
 from google.cloud import bigquery
@@ -36,8 +36,9 @@ def task(request):
             bigquery.SchemaField("last_updated", "TIMESTAMP")
         ],
         "fact_video_statistics": [
-            bigquery.SchemaField("video_id", "STRING"),
+            bigquery.SchemaField("video_id", "STRING", mode="REQUIRED"),
             bigquery.SchemaField("channel_id", "STRING"),
+            bigquery.SchemaField("duration", "STRING"),
             bigquery.SchemaField("date", "DATE"),
             bigquery.SchemaField("view_count", "INTEGER"),
             bigquery.SchemaField("like_count", "INTEGER"),
@@ -46,6 +47,7 @@ def task(request):
         "fact_comments": [
             bigquery.SchemaField("comment_id", "STRING", mode="REQUIRED"),
             bigquery.SchemaField("video_id", "STRING"),
+            bigquery.SchemaField("like_count", "INTEGER"),
             bigquery.SchemaField("published_at", "TIMESTAMP")
         ],
     }
@@ -63,7 +65,8 @@ def task(request):
 
     # --- Step 2: Run transformations ---
     queries = [
-    # dim_videos
+
+    # DIM_VIDEOS
     """
     MERGE `adrineto-qst882-fall25.youtube_staging.dim_videos` AS T
     USING (
@@ -88,7 +91,7 @@ def task(request):
       VALUES (S.video_id, S.title, S.description, S.channel_id, S.published_at, CURRENT_TIMESTAMP());
     """,
 
-    # dim_channels
+    # DIM_CHANNELS
     """
     MERGE `adrineto-qst882-fall25.youtube_staging.dim_channels` AS T
     USING (
@@ -109,7 +112,7 @@ def task(request):
       VALUES (S.channel_id, S.channel_title, S.channel_description, CURRENT_TIMESTAMP());
     """,
 
-    # dim_comments
+    # DIM_COMMENTS
     """
     MERGE `adrineto-qst882-fall25.youtube_staging.dim_comments` AS T
     USING (
@@ -130,29 +133,48 @@ def task(request):
       VALUES (S.comment_id, S.author_display_name, S.comment_text, CURRENT_TIMESTAMP());
     """,
 
-    # fact_video_statistics
+    # FACT_VIDEO_STATISTICS
     """
-    INSERT INTO `adrineto-qst882-fall25.youtube_staging.fact_video_statistics`
-    (video_id, channel_id, date, view_count, like_count, comment_count)
-    SELECT
-      v.video_id,
-      v.channel_id,
-      CURRENT_DATE() AS date,
-      s.view_count,
-      s.like_count,
-      s.comment_count
-    FROM `adrineto-qst882-fall25.youtube_raw.video_statistics` s
-    JOIN `adrineto-qst882-fall25.youtube_raw.videos` v
-      ON s.video_id = v.video_id;
+    MERGE `adrineto-qst882-fall25.youtube_staging.fact_video_statistics` AS T
+    USING (
+      SELECT
+        v.video_id,
+        v.channel_id,
+        TRIM(
+          CONCAT(
+            LPAD(CAST(IFNULL(REGEXP_EXTRACT(s.duration, r'PT(\\d+)M'), '0') AS INT64), 2, '0'),
+            ':',
+            LPAD(CAST(IFNULL(REGEXP_EXTRACT(s.duration, r'PT(?:\\d+M)?(\\d+)S'), '0') AS INT64), 2, '0')
+          )
+        ) AS duration,
+        CURRENT_DATE() AS date,
+        s.view_count,
+        s.like_count,
+        s.comment_count
+      FROM `adrineto-qst882-fall25.youtube_raw.video_statistics` s
+      JOIN `adrineto-qst882-fall25.youtube_raw.videos` v
+        ON s.video_id = v.video_id
+    ) AS S
+    ON T.video_id = S.video_id AND T.date = S.date
+    WHEN MATCHED THEN
+      UPDATE SET
+        T.view_count = S.view_count,
+        T.like_count = S.like_count,
+        T.comment_count = S.comment_count,
+        T.duration = S.duration
+    WHEN NOT MATCHED THEN
+      INSERT (video_id, channel_id, duration, date, view_count, like_count, comment_count)
+      VALUES (S.video_id, S.channel_id, S.duration, S.date, S.view_count, S.like_count, S.comment_count);
     """,
 
-    # fact_comments
+    # FACT_COMMENTS
     """
     MERGE `adrineto-qst882-fall25.youtube_staging.fact_comments` AS T
     USING (
       SELECT
         comment_id,
         video_id,
+        like_count,
         published_at
       FROM `adrineto-qst882-fall25.youtube_raw.comments`
     ) AS S
@@ -160,10 +182,11 @@ def task(request):
     WHEN MATCHED THEN
       UPDATE SET
         T.video_id = S.video_id,
+        T.like_count = S.like_count,
         T.published_at = S.published_at
     WHEN NOT MATCHED THEN
-      INSERT (comment_id, video_id, published_at)
-      VALUES (S.comment_id, S.video_id, S.published_at);
+      INSERT (comment_id, video_id, like_count, published_at)
+      VALUES (S.comment_id, S.video_id, S.like_count, S.published_at);
     """
     ]
 
