@@ -143,41 +143,43 @@ def task(request):
       SELECT
         v.video_id,
         ANY_VALUE(v.channel_id) AS channel_id,
-        CASE
+        ANY_VALUE(
+          CASE
           
-          WHEN REGEXP_CONTAINS(duration, r'PT\d+H\d+M\d+S') THEN
-            CONCAT(
-              CAST(REGEXP_EXTRACT(duration, r'PT(\d+)H') AS STRING), ':',
-              LPAD(CAST(REGEXP_EXTRACT(duration, r'(\d+)M') AS STRING), 2, '0'), ':',
-              LPAD(CAST(REGEXP_EXTRACT(duration, r'(\d+)S') AS STRING), 2, '0')
-            )
+            WHEN REGEXP_CONTAINS(duration, r'PT\d+H\d+M\d+S') THEN
+              CONCAT(
+                CAST(REGEXP_EXTRACT(duration, r'PT(\d+)H') AS STRING), ':',
+                LPAD(CAST(REGEXP_EXTRACT(duration, r'(\d+)M') AS STRING), 2, '0'), ':',
+                LPAD(CAST(REGEXP_EXTRACT(duration, r'(\d+)S') AS STRING), 2, '0')
+              )
 
-          WHEN REGEXP_CONTAINS(duration, r'PT\d+H\d+M') THEN
-            CONCAT(
-              CAST(REGEXP_EXTRACT(duration, r'PT(\d+)H') AS STRING), ':',
-              LPAD(CAST(REGEXP_EXTRACT(duration, r'(\d+)M') AS STRING), 2, '0'), ':00'
-            )
+            WHEN REGEXP_CONTAINS(duration, r'PT\d+H\d+M') THEN
+              CONCAT(
+                CAST(REGEXP_EXTRACT(duration, r'PT(\d+)H') AS STRING), ':',
+                LPAD(CAST(REGEXP_EXTRACT(duration, r'(\d+)M') AS STRING), 2, '0'), ':00'
+              )
 
-          WHEN REGEXP_CONTAINS(duration, r'PT\d+H\d+S') THEN
-            CONCAT(
-              CAST(REGEXP_EXTRACT(duration, r'PT(\d+)H') AS STRING), ':00:',
-              LPAD(CAST(REGEXP_EXTRACT(duration, r'(\d+)S') AS STRING), 2, '0')
-            )
+            WHEN REGEXP_CONTAINS(duration, r'PT\d+H\d+S') THEN
+              CONCAT(
+                CAST(REGEXP_EXTRACT(duration, r'PT(\d+)H') AS STRING), ':00:',
+                LPAD(CAST(REGEXP_EXTRACT(duration, r'(\d+)S') AS STRING), 2, '0')
+              )
 
-          WHEN REGEXP_CONTAINS(duration, r'PT\d+M\d+S') THEN
-            CONCAT(
-              CAST(REGEXP_EXTRACT(duration, r'PT(\d+)M') AS STRING), ':',
-              LPAD(CAST(REGEXP_EXTRACT(duration, r'(\d+)S') AS STRING), 2, '0')
-            )
+            WHEN REGEXP_CONTAINS(duration, r'PT\d+M\d+S') THEN
+              CONCAT(
+                CAST(REGEXP_EXTRACT(duration, r'PT(\d+)M') AS STRING), ':',
+                LPAD(CAST(REGEXP_EXTRACT(duration, r'(\d+)S') AS STRING), 2, '0')
+              )
 
-          WHEN REGEXP_CONTAINS(duration, r'PT\d+M') THEN
-            CONCAT(CAST(REGEXP_EXTRACT(duration, r'PT(\d+)M') AS STRING), ':00')
+            WHEN REGEXP_CONTAINS(duration, r'PT\d+M') THEN
+              CONCAT(CAST(REGEXP_EXTRACT(duration, r'PT(\d+)M') AS STRING), ':00')
 
-          WHEN REGEXP_CONTAINS(duration, r'PT\d+S') THEN
-            CONCAT('0:', LPAD(CAST(REGEXP_EXTRACT(duration, r'PT(\d+)S') AS STRING), 2, '0'))
+            WHEN REGEXP_CONTAINS(duration, r'PT\d+S') THEN
+              CONCAT('0:', LPAD(CAST(REGEXP_EXTRACT(duration, r'PT(\d+)S') AS STRING), 2, '0'))
 
-          ELSE NULL
-        END AS duration,
+            ELSE NULL
+            END
+        ) AS duration,
         CURRENT_DATE() AS date,
         MAX(s.view_count) AS view_count,
         MAX(s.like_count) AS like_count,
