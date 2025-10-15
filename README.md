@@ -1,7 +1,5 @@
 # YouTube Data Pipeline Project
 
-# YouTube Data Pipeline Project
-
 ## Overview
 This project is part of the **BA 882: Deploying Analytics Pipelines** class at **Boston University**.  
 It builds a **fully automated ELT pipeline** that extracts structured data from the **YouTube Data API v3**, transforms it using **Google Cloud Functions**, and orchestrates daily executions with **Airflow (Astronomer)**.  
