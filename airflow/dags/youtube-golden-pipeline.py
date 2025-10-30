@@ -28,7 +28,7 @@ def youtube_golden_pipeline():
     
     # Wait for the ETL DAG to finish
     wait_for_etl = ExternalTaskSensor(
-        task_id="wait_for_elt", 
+        task_id="wait_for_etl", 
         external_dag_id="youtube_pipeline",
         external_task_id=None, 
         poke_interval=300,    
@@ -47,7 +47,7 @@ def youtube_golden_pipeline():
         return resp
 
     # Task dependency
-    wait_for_elt >> golden()
+    wait_for_etl >> golden()
 
 # Register DAG
 youtube_golden_pipeline()
