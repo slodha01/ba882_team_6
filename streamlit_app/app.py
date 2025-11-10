@@ -36,15 +36,15 @@ if channel != "(All)":
     where += " AND c.channel_id = @channel_id"
     params["channel_id"] = channel_map[channel]
 
-# ---------------- Health ----------------
-st.subheader("Testing BigQuery connection...")
-ok = run_query("SELECT 1 AS ok")
-if ok.empty:
-    st.error("Could not connect to BigQuery.")
-    st.stop()
-else:
-    st.success("✅ Connected to BigQuery successfully!")
-    st.dataframe(ok)
+# # ---------------- Health ----------------
+# st.subheader("Testing BigQuery connection...")
+# ok = run_query("SELECT 1 AS ok")
+# if ok.empty:
+#     st.error("Could not connect to BigQuery.")
+#     st.stop()
+# else:
+#     st.success("✅ Connected to BigQuery successfully!")
+#     st.dataframe(ok)
 
 # ---------------- KPIs ----------------
 kpis_sql = f"""
