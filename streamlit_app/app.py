@@ -11,8 +11,8 @@ DATASET  = st.secrets.get("bq_dataset", "youtube_staging")
 # ---------------- Sidebar filters ----------------
 with st.sidebar:
     st.header("Filters")
-    ndays_choice = st.radio("Date range", ["Last 7 days", "Last 30 days", "Last 90 days"], index=1)
-    ndays = 7 if ndays_choice == "Last 7 days" else 30 if ndays_choice == "Last 30 days" else 90
+    ndays_choice = st.radio("Date range", ["Last 7 days", "Last 14 days", "Last 30 days"], index=1)
+    ndays = 7 if ndays_choice == "Last 7 days" else 14 if ndays_choice == "Last 14 days" else 30
 
     channels_sql = f"""
     SELECT DISTINCT c.channel_id, c.channel_title
